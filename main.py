@@ -42,6 +42,20 @@ if __name__ == '__main__':
 		startEncoding()
 		print("Encoding ended succesfully")
 		print("Starting extraction of permutation")
-		s = startExtracting()
-		print("Extraction ended succesfully")
-		decodeSip(s)
+		s1,s2,s3 = startExtracting()
+		print(s1,s2,s3)
+		key1 = decodeSip(s1)
+		key2 = decodeSip(s2)
+		key3 = decodeSip(s3)
+
+		if(key1 == KEY):
+			print("Extraction ended succesfully")
+			print("Permutation of key key1 = ",key1," ","matches with input ",KEY," with permutation ",SIP)
+		elif(key2 == KEY):
+			print("Extraction ended succesfully")
+			print("Permutation of key key2 = ",key2," ","matches with input ",KEY," with permutation ",SIP)
+		elif(key3 == KEY):
+			print("Extraction ended succesfully")
+			print("Permutation of key key3 = ",key3," ","matches with input ",KEY," with permutation ",SIP)
+		else:
+			print("None of the extracted permutation matches.")
