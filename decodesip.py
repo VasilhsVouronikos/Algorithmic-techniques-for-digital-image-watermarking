@@ -14,7 +14,6 @@ def findSubsequences(p):
 	else:
 		X_seq.append(p[len(p) - 1])
 	
-	print("X sequence: ",X_seq,"\nY sequence: ",Y_seq)
 
 	return X_seq,Y_seq
 
@@ -35,8 +34,6 @@ def flip(B):
 
 def decodeSip(sip):
 
-	print("----DECODING SIP----\n\n")
-
 	cycle_list = []
 
 	N = len(sip)			              # length of initial bitonic permutation
@@ -45,7 +42,6 @@ def decodeSip(sip):
 		M = int(N / 2)				
 	else:                       
 		M = int(N / 2) + 1    
-	print(M)
 	# FORM CYCLES FROM SIP
 
 	for i in range(M - 1):
@@ -59,7 +55,6 @@ def decodeSip(sip):
 
 	# REVERSE THE CYCLE LIST
 	cycle_list.reverse()
-	print("Reversed cycle list: ",cycle_list)
 
 	# INITIALIZE BITONIC PERMUTATION
 	P_b = initList(N)
@@ -81,7 +76,6 @@ def decodeSip(sip):
 			i += 1
 			k += 1
 
-	print("Bitonic permutation: ",P_b)
 
 	# FORM X AND Y SEQUENCES
 
@@ -95,18 +89,16 @@ def decodeSip(sip):
 	for j in range(len(Y)):
 		B_inverse[Y[j] - 1] = 1
 
-	print("B inverse: ",B_inverse)
 
 	# FORM B
 
 	B = flip(B_inverse)
 
-	print("Binary with n* zeros in front and 1 zero in the end: ",B)
 
 	# FORM DECIMAL FROM BINARY
 	B = [str(B[i]) for i in range(len(B))]   # we turn the int B list to string so the int(B,2) will work
 	B = ''.join(B)                           # we turn the list to string
 	key = int((int(B,2)) / 2)                # then the string representation of the binary to decimal
                                              # we divide by 2 because by adding an extra 0 in the end of B we shift left the number
-	print("Input integer key: ",key)
+	return key
 

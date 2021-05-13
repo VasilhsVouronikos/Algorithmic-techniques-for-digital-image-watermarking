@@ -19,25 +19,24 @@ class EmbedPermutation:
 		img = Image.open(path)
 		return img
 
-	def getFFTTransform(self,image,t):
-		dft = cv2.dft(np.float32(image), flags = cv2.DFT_COMPLEX_OUTPUT)
+	def getFFTTransform(self,image):
+		dft = np.fft.fft2(image,norm='ortho')
 		fftShift = np.fft.fftshift(dft)
-		mag, phase = cv2.cartToPolar(fftShift[:,:,0], fftShift[:,:,1])
-		mag_norm = mag / 180
-		#plt.imshow(20*np.log(mag),cmap = 'gray')
-		#plt.show()
-		return mag_norm,phase
+		mag = np.abs(fftShift)
+		phase = np.angle(fftShift)
+		return mag,phase
 
-	def getIFFTTransform(self,mag,phase,t):
-		#plt.imshow(20*np.log(mag*(t)),cmap = 'gray')
-		#plt.show()
-		r_factor = 5
-		real, imag = cv2.polarToCart(mag*(180 - r_factor), phase)
-		back = cv2.merge([real, imag])
-		back_ishift = np.fft.ifftshift(back)
-		img_back = cv2.idft(back_ishift,flags=cv2.DFT_SCALE)
-		img_back = cv2.magnitude(img_back[:,:,0], img_back[:,:,1])
-		return img_back
+	def getIFFTTransform(self,mag,phase):
+		real = mag * np.cos(phase)
+		imag = mag * np.sin(phase)
+		complex_output = np.zeros(mag.shape, complex)
+
+		complex_output.real = real
+		complex_output.imag = imag
+		back_ishift = np.fft.ifftshift(complex_output)
+		img_back = np.fft.ifft2(back_ishift,norm='ortho')
+		img_back = abs(img_back)
+		return img_back 
 		
 
 	def showImage(self,*image_args):
@@ -61,12 +60,7 @@ class EmbedPermutation:
 					f += 1
 		return cell_list
 
-	def findOptimalIntensity(self,image):
-		ret,th = cv2.threshold(image,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-		print(ret)
-		return ret
-
-	def getWatermarkedImage(self,im,sip,SIZE,name):
+	def getWatermarkedImage(self,im,sip,SIZE,name,copt):
 		img = self.openImage(im)
 
 		w,h = img.size
@@ -83,14 +77,12 @@ class EmbedPermutation:
 
 		r,g,b = img.split()
 
-
-		th1 = self.findOptimalIntensity(np.array(r))
 		#th2 = self.findOptimalIntensity(np.array(g))
 		#th3 = self.findOptimalIntensity(np.array(b))
 
-		r_img = self.embedPermutationToChannel(r,sip,SIZE,th1)
-		g_img = self.embedPermutationToChannel(g,sip,SIZE,th1)
-		b_img = self.embedPermutationToChannel(b,sip,SIZE,th1)
+		r_img = self.embedPermutationToChannel(r,sip,SIZE,copt)
+		g_img = self.embedPermutationToChannel(g,sip,SIZE,copt)
+		b_img = self.embedPermutationToChannel(b,sip,SIZE,copt)
 
 		red = Image.fromarray(r_img)
 		green = Image.fromarray(g_img)
@@ -100,24 +92,24 @@ class EmbedPermutation:
 		# If image after embeding has different size here we resize it to original
 		#rgb = cv2.resize(rgb, None, interpolation = cv2.INTER_AREA)
 		#rgb.thumbnail(size)
-		rgb.save("watermarked_" + name + ".jpg")
-		return
+		#rgb.save("watermarked_" + name + ".jpg")
+		return rgb
 
 	def mergeCellsToImage(self,m,unm,w,h,sip_cells):
 		sorted_cells = self.sortCells(m,unm,sip_cells)
 		N = len(sip_cells)
-		display = np.empty(((w-1)*N, (h-1)*N), dtype=np.uint8)
+		display = np.empty(((w)*N, (h)*N), dtype=np.uint8)
 
 		for i, j in it.product(range(N), range(N)):
 			arr = sorted_cells[i*N+j]
 			
-			x,y = i*(w-1), j*(h-1)
-			display[x : x + (w-1), y : y + (h-1)] = arr
+			x,y = i*(w), j*(h)
+			display[x : x + (w), y : y + (h)] = arr
 				
 		
 		return display
 
-	def modifyMagnitude(self,mag_marked,mag_rest,D_array,sip_cells,gw,gh,totsu):
+	def modifyMagnitude(self,mag_marked,mag_rest,D_array,sip_cells,gw,gh,copt):
 		modified_cells = []
 		unmodified_cells = []
 
@@ -125,7 +117,7 @@ class EmbedPermutation:
 
 			MAGNITUDE = mag_rest[i][0]
 			PHASE = mag_rest[i][1]
-			original_cell = self.getIFFTTransform(MAGNITUDE,PHASE,totsu)
+			original_cell = self.getIFFTTransform(MAGNITUDE,PHASE)
 			unmodified_cells.append(original_cell)
 			#print("rest ",(mag_rest[i][5] - mag_rest[i][4]))
 
@@ -140,6 +132,7 @@ class EmbedPermutation:
 			COORD_R = mag_marked[i][6]
 			COORD_B = mag_marked[i][7]
 			a = np.amax(MAGNITUDE)
+			#print((AVG_B - AVG_R) + (D_array[i] + 4.0),mag_marked[i][8],mag_marked[i][9])
 			#print(AVG_R,AVG_B,D_array[i])
 			#plt.imshow(MAGNITUDE,cmap = 'gray')
 			#plt.show()
@@ -149,7 +142,7 @@ class EmbedPermutation:
 					for t in range(len(COORD_R)):
 						if(j == COORD_R[t][0] and k == COORD_R[t][1]):
 							#print("mag ",MAGNITUDE[j,k])
-							val = (AVG_B - AVG_R) + (D_array[i] + 3.0)
+							val = (AVG_B - AVG_R) + (D_array[i] + copt)
 							MAGNITUDE[j,k] += val# change magnitude of red region cells
 					'''
 					for t in range(len(COORD_B)):
@@ -158,18 +151,17 @@ class EmbedPermutation:
 							val = (AVG_B - AVG_R) + (D_array[i] + 340)
 							MAGNITUDE[j,k] =  a#val# change magnitude of red region cells
 					'''
-			#plt.imshow(MAGNITUDE,cmap = 'gray')
-			#plt.show()
 			#print(COORD_R)
-			original_cell = self.getIFFTTransform(MAGNITUDE,PHASE,totsu)
+			#print(MAGNITUDE)
+			#exit()
+			original_cell = self.getIFFTTransform(MAGNITUDE,PHASE)
 			modified_cells.append(original_cell)
 			#print("MOD ",(AVG_B - AVG_R))
 		return modified_cells,unmodified_cells
 
-	def embedPermutationToChannel(self,channel,sip,SIZE,t):
+	def embedPermutationToChannel(self,channel,sip,SIZE,copt):
 		grid_cell_num = 0
 		sip_cells = []
-		print(t)
 
 		# STEP 1: FIND 2D REPRESANTAION OF SIP
 
@@ -220,16 +212,8 @@ class EmbedPermutation:
 		c = 0
 		mag_red_blue = []
 		mag_rest = []
-		l = 0
-		k = 0
-		if(N % grid_size_w == 0):
-			l = N
-			k = M
-		else:
-			l = N - grid_size_w
-			k = M - grid_size_h
-		for r in range(0,l, grid_size_w):
-			for c in range(0,k, grid_size_h):
+		for r in range(0,N - grid_size_w + 1, grid_size_w):
+			for c in range(0,M - grid_size_h + 1, grid_size_h):
 				grid_cell_num += 1
 				AVG_RED = 0
 				AVG_BLUE = 0
@@ -238,21 +222,15 @@ class EmbedPermutation:
 				D = 0
 				c +=1
 
-				grid_cell = channel_array[r:r + grid_size_w-1,c:c + grid_size_h-1]
-				#print(grid_cell.shape)
-				#print(channel_array[r:r + grid_size_w,c:c + grid_size_h].shape)
-				#np.reshape(grid_cell,(40,40))
-				#print(grid_cell.shape)
-				#print(r,c)
-				mag,phase = self.getFFTTransform(grid_cell,t)
-				#print(mag.shape)
-	
+				grid_cell = channel_array[r:r + grid_size_w,c:c + grid_size_h]
+				mag,phase = self.getFFTTransform(grid_cell)
+				
 				cx = int(grid_cell.shape[0] / 2)
 				cy = int(grid_cell.shape[1] / 2)
 
-			
-				red,coord_red = createEllipticDisk(mag,RED_RADIOUS_X,RED_RADIOUS_Y,RED_WIDTH,cx,cy,grid_size_w-1,grid_size_h-1)
-				blue,coord_blue = createEllipticDisk(mag,BLUE_RADIOUS_X,BLUE_RADIOUS_Y,BLUE_WIDTH,cx,cy,grid_size_w-1,grid_size_h-1)
+				
+				red,coord_red = createEllipticDisk(mag,RED_RADIOUS_X,RED_RADIOUS_Y,RED_WIDTH,cx,cy,grid_size_w,grid_size_h)
+				blue,coord_blue = createEllipticDisk(mag,BLUE_RADIOUS_X,BLUE_RADIOUS_Y,BLUE_WIDTH,cx,cy,grid_size_w,grid_size_h)
 				
 
 				AVG_RED = sum(red) / len(red)
@@ -267,7 +245,7 @@ class EmbedPermutation:
 				MaxD.append(D)
 
 				if(i < len(sip_cells) and sip_cells[i][0] == x and sip_cells[i][1] == y): # for every marked sip cell take the magnitude,red,blue
-					mag_red_blue.append((mag,phase,red,blue,AVG_RED,AVG_BLUE,coord_red,coord_blue))
+					mag_red_blue.append((mag,phase,red,blue,AVG_RED,AVG_BLUE,coord_red,coord_blue,x,y))
 					i += 1
 				else:
 					mag_rest.append((mag,phase,red,blue,AVG_RED,AVG_BLUE,coord_red,coord_blue))
@@ -277,7 +255,8 @@ class EmbedPermutation:
 			del MaxD[:]
 			x += 1
 			y = 0
-		m,unm = self.modifyMagnitude(mag_red_blue,mag_rest,MaxDRows,sip_cells,grid_size_w,grid_size_h,t)
+		
+		m,unm = self.modifyMagnitude(mag_red_blue,mag_rest,MaxDRows,sip_cells,grid_size_w,grid_size_h,copt)
 		img = self.mergeCellsToImage(m,unm,grid_size_w,grid_size_h,sip_cells)
 
 		return img

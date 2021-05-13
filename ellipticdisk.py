@@ -11,7 +11,6 @@ def createEllipticDisk(array,R1_X,R1_Y,W,C_X,C_Y,cell_w,cell_h):
 	RES2 = []
 	COORD2 = []
 	angle = 0
-	#print(cell_w,cell_h)
 
 	for x in range(cell_w):
 		for y in range(cell_h):

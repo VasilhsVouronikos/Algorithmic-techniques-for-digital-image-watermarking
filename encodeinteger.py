@@ -27,9 +27,7 @@ def flip(B_star):
 
 def encodeInteger(key):
 
-		print("----ENCODING INTEGER----\n\n")
-
-		print("Input integer key: ",key)
+		
 		# FORM BINARY REPRESANTATION O INPUT INTEGER
 		B = getBinary(key)						  			  # bin function returns the binaty representation as string so we form a list of characters
 		B = [int(i) for i in B]								  # this characters are just 0 and 1 so we reform the list to contain ints
@@ -37,18 +35,14 @@ def encodeInteger(key):
 		X_seq = []
 		Y_seq = []
 
-		print("Binary of key: ",B)
-
 		# FORM 000...0||B||0 WHERE ZEROS AT THE START ARE n*
 		for i in range(len(B)):
 			B.insert(0,0)                                      # insert n (lenght of B) 0s in front of the binary representation of key
 		B.insert(len(B),0)                                     # insert one extra 0 in the end
-		print("Binary of key with n* zeros in front and 1 zero in the end: ",B)
 
 		# FORM FLIP(B) = B'
 		B_inverse = flip(B)
 
-		print("Inverse of the previous binary: ",B_inverse)
 
 		#FORM X AND Y SEQUENCES
 		for i in range(len(B_inverse)):
@@ -57,12 +51,9 @@ def encodeInteger(key):
 			if(B_inverse[i] == 1):
 				Y_seq.append(i + 1)
 
-		print("X sequence: ",X_seq)
-		print("Y sequence: ",Y_seq)
 
 		# FORM THE BITONIC SEQUENCE
 		P_b = bitonic(X_seq,Y_seq)
-		print("Bitonic sequence: ",P_b)
 
 		# FORM CYCLES 
 		N = len(P_b)
@@ -79,7 +70,7 @@ def encodeInteger(key):
 			else:
 				t = (P_b[i],P_b[len(P_b) - i - 1])  # case2: we are not in the middle of πb so we form a 2-cycle t = (pi,pj)
 				C_list.append(t)                    # where pi is the i-th number from the left and pj is the j-th number from right of πb
-		print("Cycles: ",C_list)                    # in the end C_list looks like that [(p1,p2),(p3,p4),...]
+								                    # in the end C_list looks like that [(p1,p2),(p3,p4),...]
 
 		# FORM PERMUTATION FOLLOWING THE GIVEN ALGORITHM
 		sip = P_b
@@ -92,6 +83,5 @@ def encodeInteger(key):
 			else:
 				a = t
 				sip[a - 1] = a
-		print("Self inverting permutation: ",sip,"\n\n")
 
 		return sip

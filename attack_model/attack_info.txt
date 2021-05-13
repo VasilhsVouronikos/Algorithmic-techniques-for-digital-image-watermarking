@@ -1,0 +1,13 @@
+watermarked_painting.jpg : filter = gaussian with kernel = (5, 5)
+watermarked_painting.jpg : filter = gaussian with kernel = (3, 3)
+watermarked_painting.jpg : filter = gaussian with kernel = (7, 7)
+watermarked_painting.jpg : filter = average with kernel = (2, 2)
+watermarked_painting.jpg : compression_quality = 75
+watermarked_painting.jpg : filter = sharpening with kernel = [[ 0 -1  0]
+ [-1  5 -1]
+ [ 0 -1  0]]
+watermarked_painting.jpg : filter = median with kernel = 5
+watermarked_painting.jpg : scale = 0.5
+watermarked_painting.jpg : rotation = -5 degrees
+watermarked_painting.jpg : rotation = -5 degrees
+watermarked_painting.jpg : rotation = -5 degrees

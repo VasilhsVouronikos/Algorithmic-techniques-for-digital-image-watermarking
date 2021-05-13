@@ -20,23 +20,26 @@ class ExtractPermutation:
 		return img
 
 	def getFFTTransform(self,image,t):
-		dft = cv2.dft(np.float32(image), flags = cv2.DFT_COMPLEX_OUTPUT)
+		dft = np.fft.fft2(image,norm='ortho')
 		fftShift = np.fft.fftshift(dft)
-		mag, phase = cv2.cartToPolar(fftShift[:,:,0], fftShift[:,:,1])
-		mag = mag / 180
+		mag = np.abs(fftShift)
+		phase = np.angle(fftShift)
 		return mag,phase
 
 	def getIFFTTransform(self,mag,phase):
-		real, imag = cv2.polarToCart(mag, phase)
-		back = cv2.merge([real, imag])
-		back_ishift = np.fft.ifftshift(back)
-		img_back = cv2.idft(back_ishift,flags=cv2.DFT_SCALE)
-		img_back = cv2.magnitude(img_back[:,:,0], img_back[:,:,1])
-		return img_back
+		real = mag * np.cos(phase)
+		imag = mag * np.sin(phase)
+		complex_output = np.zeros(mag.shape, complex)
+
+		complex_output.real = real
+		complex_output.imag = imag
+		back_ishift = np.fft.ifftshift(complex_output)
+		img_back = np.fft.ifft2(back_ishift,norm='ortho')
+		img_back = abs(img_back)
+		return img_back 
 
 	def findOptimalIntensity(self,image):
 		ret,th = cv2.threshold(image,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-		print(ret)
 		return ret	
 
 	def showImage(self,*image_args):
@@ -56,8 +59,8 @@ class ExtractPermutation:
 		sip1 = self.extractPermutationFromChannel(r,SIZE,t1)
 		sip2 = self.extractPermutationFromChannel(g,SIZE,t1)
 		sip3 = self.extractPermutationFromChannel(b,SIZE,t1)
-		print(sip1,sip2,sip3)
-		return sip1
+
+		return sip1,sip2,sip3
 
 	def extractPermutationFromChannel(self,channel,SIZE,t):
 
@@ -69,7 +72,6 @@ class ExtractPermutation:
 
 		N,M = channel.size
 		channel_array = np.array(channel)
-		print(N,M)
 		#channel_array = cv2.resize(channel_array,(200,200))
 
 		# GET THE SIZE OF EACH GRID SHELL
@@ -99,8 +101,8 @@ class ExtractPermutation:
 		mag_red_blue = []
 		mag_rest = []
 		
-		for r in range(0,N, grid_size_w):
-			for c in range(0,M, grid_size_h):
+		for r in range(0,N - grid_size_w + 1, grid_size_w):
+			for c in range(0,M - grid_size_h + 1, grid_size_h):
 				grid_cell_num += 1
 				AVG_RED = 0
 				AVG_BLUE = 0
@@ -109,7 +111,9 @@ class ExtractPermutation:
 				D = 0
 				
 				grid_cell = channel_array[r:r + grid_size_w,c:c + grid_size_h]
+
 				mag,phase = self.getFFTTransform(grid_cell,t)
+				
 				#print(grid_cell.shape)
 			
 				cx = int(grid_cell.shape[0] / 2)
@@ -124,6 +128,7 @@ class ExtractPermutation:
 				AVG_BLUE = sum(blue) / len(blue)
 				#print(AVG_BLUE)
 				avg.append(AVG_RED)
+
 				c += 1
 
 				extract_factor = AVG_BLUE - AVG_RED

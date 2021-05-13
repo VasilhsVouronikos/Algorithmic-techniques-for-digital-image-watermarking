@@ -11,6 +11,7 @@ KEY = int(sys.argv[1])
 IMAGE = sys.argv[2]
 IMAGE_NAME = re.split(r'\.(?!\d)', IMAGE)[0]
 COMMAND = sys.argv[3]
+COPT = float(sys.argv[4])
 global SIP 
 global SIZE
 
@@ -22,12 +23,12 @@ def startEncoding():
 def startEmbeding():
 	global SIP,SIZE
 	w = EmbedPermutation()
-	w.getWatermarkedImage(IMAGE,SIP,SIZE,IMAGE_NAME)
+	w.getWatermarkedImage(IMAGE,SIP,SIZE,IMAGE_NAME,COPT)
 
 def startExtracting():
 	ex = ExtractPermutation()
-	sip = ex.getSip(IMAGE,SIZE)
-	return sip
+	sip1,sip2,sip3 = ex.getSip(IMAGE,SIZE)
+	return sip1,sip2,sip3
 
 if __name__ == '__main__':
 	if(COMMAND == "embed"):
