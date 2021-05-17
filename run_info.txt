@@ -2,9 +2,9 @@
 py main.py 'key' 'image' 'command' 'c'
 
 example: py main.py 5 lena.jpg embed 2.7
-
+note: after embeding original image becomes watermarked_lena.jpg
 
 ----- TO RUN EXTRACT---------
 py main.py 'key' 'image' 'command' 'c'
 
-example: py main.py 5 lena.jpg extract 2.7
+example: py main.py 5 watermarked_lena.jpg extract 2.7
