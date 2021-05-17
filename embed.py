@@ -92,7 +92,7 @@ class EmbedPermutation:
 		# If image after embeding has different size here we resize it to original
 		#rgb = cv2.resize(rgb, None, interpolation = cv2.INTER_AREA)
 		#rgb.thumbnail(size)
-		#rgb.save("watermarked_" + name + ".jpg")
+		rgb.save("watermarked_" + name + ".jpg")
 		return rgb
 
 	def mergeCellsToImage(self,m,unm,w,h,sip_cells):
