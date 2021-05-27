@@ -14,26 +14,22 @@ class attackModel:
 		self.f_info = open('attack_info.txt','a')
 		return
 
-	def attackImage(self,image,attack_type,args,key,c):
+	def attackImage(self,image,attack_type,args,key,c,m):
 		if(attack_type == 'filter'):
 			ftype = args[0]
 			kernel = args[1]
-			path = self.filter(image,ftype,kernel,key,c)
+			path = self.filter(image,ftype,kernel,key,c,m)
 		if(attack_type == 'jpeg'):
 			quality = args[0]
-			path = self.JPEGcompression(image,quality,key,c)
+			path = self.JPEGcompression(image,quality,key,c,m)
 		if(attack_type == 'scale'):
 			per = args[0] / 100
 			self.scale(image,per)
 		if(attack_type == 'crop'):
-			x = args[0]
-			y = args[1]
-			ratiox = args[2]
-			ratioy = args[3]
-			path = self.crop(image,x,y,ratiox,ratioy,key,c)
+			path = self.crop(image,key,c,m)
 		if(attack_type == 'rotate'):
 			angle = args[0]
-			path = self.rotate(image,angle)
+			path = self.rotate(image,angle,m)
 		return path
 
 	def openImage(self,path):
@@ -45,28 +41,29 @@ class attackModel:
 		plt.show()
 		return
 
-	def rotate(self,image,angle):
+	def rotate(self,image,angle,m):
 		img = self.openImage(image)
 		name = image.split('.')[0]
 		rotated_img = img.rotate(angle)
 		self.showImage(rotated_img)
 		path = "rotated_images/rotated_" + name + ".jpg"
-		rotated_img.save(path)
+		rotated_img.save(path,quality=100,subsampling=0)
 		self.f_info.write(image + " : " + "rotation = " + str(angle) + " degrees"  + '\n')
 		return path
 
-	def JPEGcompression(self,image,quality,key,c):
+	def JPEGcompression(self,image,quality,key,c,m):
 		print("Compressing image  = ",image," with quality = ",quality)
 		im = self.openImage(image)
+		print(im.filename)
 		NAME = image.split('.')[0]
-		path = "compressed_images/compressed_"+ NAME + str(quality) + ".jpg"
-		im.save(path,
-			optimize = True, 
-			quality = quality)
+		path = "compressed_images/compressed_"+ m + "_"+ NAME + str(quality) + ".jpg"
+		im.save(path,'jpeg',
+			quality = quality,subsampling = 0)
 		self.f_info.write(image + " : " + "compression_quality = " + str(quality) + " ,extract watermark with key = "+ str(key) + " and c = " + str(c) +  '\n')
+		#im = Image.open(path)
 		return path
 
-	def scale(self,image,ratio):
+	def scale(self,image,ratio,m):
 		img = self.openImage(image)
 		im = np.array(img)
 		name = image.split('.')[0]
@@ -79,19 +76,19 @@ class attackModel:
 		self.f_info.write(image + " : " + "scale = " + str(ratio) + '\n')
 		return path
 
-	def crop(self,image,x,y,ratiox,ratioy,key,c):
+	def crop(self,image,key,c,m):
 		
 		img = self.openImage(image)
 		im = np.array(img)
 		name = image.split('.')[0]
 		crop_img = im.copy()
 		crop_img = Image.fromarray(crop_img)
-		path = "croped_images/croped_" + name + ".jpg"
-		crop_img.save(path)
+		path = "croped_images/croped_"+ m + "_" + name + ".jpg"
+		crop_img.save(path,quality=100,subsampling=0)
 		self.f_info.write(image + " : " + "mode = crop" + " ,extract watermark with key = "+ str(key) + " and c = " + str(c) + '\n')
 		return path
 
-	def filter(self,image,mode,kernel,key,c):
+	def filter(self,image,mode,kernel,key,c,m):
 		img = self.openImage(image)
 		im = np.array(img)
 		name = image.split('.')[0]
@@ -132,7 +129,7 @@ class attackModel:
 			self.showImage(image_sharp)
 			image_sharp = Image.fromarray(image_sharp)
 			path = "filtered_images/filterd_sharpened_" + name + ".jpg"
-			image_sharp.save(path)
+			image_sharp.save(path,quality=100,subsampling=0)
 			self.f_info.write(image + " : " + "filter = " + mode + " with kernel = " + str(kernel) + '\n')
 		if(mode == "noise"):
 			mean = float(kernel[0])
