@@ -16,15 +16,17 @@ import math
 global secret_pg,secret_pb
 #pairsg = [((2,0),(3,0)),((2,1),(3,1)),((2,2),(3,2)),((2,5),(2,6)),((2,7),(3,0)),((3,1),(3,2)),((3,3),(3,4)) # mid bands
     #,((3,5),(3,6)),((3,7),(4,0)),((4,1),(4,2)),((4,3),(4,4))]
-pairsg = [((3,7),(4,0)),((4,1),(4,2)),((4,3),(4,4))] # mid bands
+#pairsg = [((1, 4), (2, 3)), ((3, 2), (4, 1)), ((5, 0), (6, 0)), ((5, 1), (4, 2)), ((3, 3), (2, 4)), ((1, 5), (0, 6)), ((0, 7), (1, 6)), ((2, 5), (3, 4)), 
+#((4, 3), (5, 2)), ((6, 1), (7, 0)), ((7, 1), (6, 2))] # mid bands
+pairsg = [((4, 3),(5, 2)),((6, 1),(7, 0)),((7, 1), (6, 2)),((5, 0), (6, 0)), ((5, 1), (4, 2)),((3,3),(3,4)),((3, 2), (4, 1))]
 #,((4,1),(4,2)),((4,3),(4,4))]
 def binarizeLogo(path):
     l = np.array(openImage(path,'default'))
-    ret,th = cv2.threshold(l,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    ret,th = cv2.threshold(l,170,255,cv2.THRESH_BINARY)
     return th
 
 def arnold(img):
-    r, c = img.shape
+    r, c  = img.shape
     p = np.zeros((r, c), np.uint8)
     a = 1
     b = 1
@@ -79,9 +81,12 @@ def embed(path,win_size,logo1,logo2,rep_code):
     blue_blocks = []
     bin_l1 = binarizeLogo(logo1)
     bin_l2 = binarizeLogo(logo2)
-   
+    
     arn1 = arnold(bin_l1)
     arn2 = arnold(bin_l2)
+
+    #plt.imshow(bin_l1,cmap = 'gray')
+    #plt.show()
 
     im = openImage(path,None)
     g_channel, b_channel,r_channel = splitImagechannels(im)
@@ -132,7 +137,7 @@ def embed(path,win_size,logo1,logo2,rep_code):
 
                 reshapedb = np.reshape(reorderedb, (8, 8))
                 if(arn1[k,l] == 255):
-                    t1times = rep_code[0] * 255
+                    t1times = rep_code[0] * 1
                     binary = bin(t1times)[2:]
                     arn1_1_bit.append((str(binary)))
                     for i in range(rep_code[0]):
@@ -239,9 +244,9 @@ def embed(path,win_size,logo1,logo2,rep_code):
     red = Image.fromarray(r_channel)
     green = Image.fromarray(dis2)
     blue = Image.fromarray(dis1)
-    path = "watermarked_" + path
+    path = "watermarked_logo_" + path
     rgb = Image.merge('RGB', (red,green,blue))
-    rgb.save(path,'jpeg',quality= 100,subsampling=0)
+    rgb.save(path,optimize = True,quality= 100,subsampling=0)
     #print(rgb.filename)
     return path
     
