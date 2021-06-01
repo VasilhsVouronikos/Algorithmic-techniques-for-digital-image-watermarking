@@ -4,6 +4,9 @@ import ast
 from collections import Counter
 from recossip import recsip
 import math
+from PIL import Image
+import numpy as np
+import matplotlib.pyplot as plt
 
 ATTACK = sys.argv[1]
 IMAGE = sys.argv[2]
@@ -47,10 +50,17 @@ def initModel(m):
 # based on SIP properties
 
 def recostructSip(sip,s1,s2,s3,mode):
-	if(mode == 'crop' or 'jpeg'):
-		if(s1 != sip):
-			new_sip = recsip(s1,sip,5)
-			print("fixed sip: ",new_sip)
+	if(mode == 'crop' or 'jpeg' or 'scale'):
+		if(s1 != sip or s2 != sip or s3 != sip):
+			new_sip1 = recsip(s1,sip,5)
+			new_sip2 = recsip(s2,sip,5)
+			new_sip3 = recsip(s3,sip,5)
+			if(new_sip1 == sip):
+				print("fixed sip: ",new_sip1)
+			elif(new_sip2 == sip):
+				print("fixed sip: ",new_sip2)
+			elif(new_sip3 == sip):
+				print("fixed sip: ",new_sip3)
 		else:
 			print("sip : ",sip,"\n","s1 : ",s1,"\n","s2 : ",s2,"\n","s3 : ",s3)
 	else:
@@ -85,44 +95,68 @@ def testAttack():
 		if(ATTACK == 'crop'):
 			# we dont want to embed when image is edited
 			# just test if watermark can be extracted
-			path = attack_model.attackImage("watermarked_"+IMAGE_NAME+".jpg",ATTACK,args,KEY,COPT,MODEL)
-			s1,s2,s3 = extract_model.getSip(path,size)
+			path = attack_model.attackImage(IMAGE,ATTACK,args,KEY,COPT,MODEL)
+			s1,s2,s3 = extract_model.getSip(path,size,2,2)
 			recostructSip(sip,s1,s2,s3,ATTACK)
 		elif(ATTACK == 'rotate'):
-			embed_model.getWatermarkedImage(IMAGE,sip,size,IMAGE_NAME,COPT)
+			embed_model.getWatermarkedImage(IMAGE,sip,size,IMAGE_NAME,COPT,2,2)
 			args = ast.literal_eval(ARGS)
 			path = attack_model.attackImage("watermarked_"+IMAGE_NAME+".jpg",ATTACK,args,KEY,COPT,MODEL)
-			s1,s2,s3 = extract_model.getSip(path,size)
+			s1,s2,s3 = extract_model.getSip(path,size,2,2)
 			detectSipRotation(s1)
 			detectSipRotation(s2)
 			detectSipRotation(s3)
 			if(args[0] == 0):
 				print("sip : ",sip,"\n","s1 : ",s1,"\n","s2 : ",s2,"\n","s3 : ",s3)
-		else:
-			embed_model.getWatermarkedImage(IMAGE,sip,size,IMAGE_NAME,COPT)
+		elif(ATTACK == 'scale'):
+			PR = 2
+			PB = 2
+			embed_model.getWatermarkedImage(IMAGE,sip,size,IMAGE_NAME,COPT,PR,PB)
 			args = ast.literal_eval(ARGS)
 			path = attack_model.attackImage("watermarked_"+IMAGE_NAME+".jpg",ATTACK,args,KEY,COPT,MODEL)
-			s1,s2,s3 = extract_model.getSip(path,size)
-			print("sss",s1)
+			s1,s2,s3 = extract_model.getSip(path,size,1,1)
+			print("sip : ",sip,"\n","s1 : ",s1,"\n","s2 : ",s2,"\n","s3 : ",s3)
+			recostructSip(sip,s1,s2,s3,ATTACK)
+		else:
+			embed_model.getWatermarkedImage(IMAGE,sip,size,IMAGE_NAME,COPT,2,2)
+			args = ast.literal_eval(ARGS)
+			path = attack_model.attackImage("watermarked_"+IMAGE_NAME+".jpg",ATTACK,args,KEY,COPT,MODEL)
+			s1,s2,s3 = extract_model.getSip(path,size,2,2)
 			recostructSip(sip,s1,s2,s3,ATTACK)
 	elif(MODEL == 'logo'):
-		attack_model = initModel(MODEL)
-		args = ast.literal_eval(ARGS)
-		LOGO_1 = sys.argv[5]
-		LOGO_2 = sys.argv[6]
-		#rep = (3,1)
-		#rep = (5,1)
-		rep = (3,1)
-		KEY = "no key"
-		COPT = "no c"
-		#SECRET_PAIRS = [((2,0),(3,0)),((2,1),(3,1)),((2,2),(3,2)),((2,5),(2,6)),((2,7),(3,0)),((3,1),(3,2)),((3,3),(3,4)),((3,5),(3,6)),((3,7),(4,0)),((4,1),(4,2)),((4,3),(4,4))]
-		#SECRET_PAIRS = [((2,7),(3,0)),((3,1),(3,2)),((3,3),(3,4)),((3,5),(3,6)),((3,7),(4,0)),((4,1),(4,2)),((4,3),(4,4))]
-		#SECRET_PAIRS = [((3,3),(3,4)),((3,5),(3,6)),((3,7),(4,0)),((4,1),(4,2)),((4,3),(4,4))]
-		SECRET_PAIRS = [((3,7),(4,0)),((4,1),(4,2)),((4,3),(4,4))]
-		im = embed(IMAGE,8,LOGO_1,LOGO_2,rep)
-		path = attack_model.attackImage(im,ATTACK,args,KEY,COPT,MODEL)
-		extractLogoFromImage(path,8,SECRET_PAIRS,rep)
-		return
+		if(ATTACK == 'crop'):
+			attack_model = initModel(MODEL)
+			args = ast.literal_eval(ARGS)
+			LOGO_1 = sys.argv[5]
+			LOGO_2 = sys.argv[6]
+			rep = (7,1)
+			KEY = "no key"
+			COPT = "no c"
+			SECRET_PAIRS = [((4, 3),
+				(5, 2)),((6, 1),(7, 0)),((7, 1), (6, 2)),((5, 0), (6, 0)), ((5, 1), (4, 2)),((3,3),(3,4)),((3, 2),(4, 1))]
+			path = attack_model.attackImage(IMAGE,ATTACK,args,KEY,COPT,MODEL)
+			extractLogoFromImage(path,8,SECRET_PAIRS,rep)
+		else:
+
+			attack_model = initModel(MODEL)
+			args = ast.literal_eval(ARGS)
+			LOGO_1 = sys.argv[5]
+			LOGO_2 = sys.argv[6]
+			#rep = (3,1)
+			#rep = (5,1)
+			rep = (7,1)
+			KEY = "no key"
+			COPT = "no c"
+			#SECRET_PAIRS = [((1, 4), (2, 3)), ((3, 2), (4, 1)), ((5, 0), (6, 0)), ((5, 1), (4, 2)), ((3, 3), (2, 4)), ((1, 5), (0, 6)), ((0, 7), (1, 6)), ((2, 5), (3, 4)), 
+								#((4, 3), (5, 2)), ((6, 1), (7, 0)), ((7, 1), (6, 2))]
+			#SECRET_PAIRS = [((2,7),(3,0)),((3,1),(3,2)),((3,3),(3,4)),((3,5),(3,6)),((3,7),(4,0)),((4,1),(4,2)),((4,3),(4,4))]
+			#SECRET_PAIRS = [((3,3),(3,4)),((3,5),(3,6)),((3,7),(4,0)),((4,1),(4,2)),((4,3),(4,4))]
+			#SECRET_PAIRS = [((4, 3),(5, 2)),((6, 1),(7, 0)),((7, 1), (6, 2)),((5, 0), (6, 0)), ((5, 1), (4, 2))]
+			SECRET_PAIRS = [((4, 3),
+				(5, 2)),((6, 1),(7, 0)),((7, 1), (6, 2)),((5, 0), (6, 0)), ((5, 1), (4, 2)),((3,3),(3,4)),((3, 2),(4, 1))]
+			im = embed(IMAGE,8,LOGO_1,LOGO_2,rep)
+			path = attack_model.attackImage(im,ATTACK,args,KEY,COPT,MODEL)
+			extractLogoFromImage(path,8,SECRET_PAIRS,rep)
 	else:
 		return
 
