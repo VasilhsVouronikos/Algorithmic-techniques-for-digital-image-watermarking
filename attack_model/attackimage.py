@@ -5,9 +5,12 @@ import cv2
 import ast
 import matplotlib.pyplot as plt
 from scipy.signal.signaltools import wiener
+import skimage
 from PIL import Image
+import PIL
 from skimage.util import random_noise
 from scipy import ndimage
+from io import StringIO
 
 class attackModel:
 
@@ -54,12 +57,11 @@ class attackModel:
 
 	def JPEGcompression(self,image,quality,key,c,m):
 		print("Compressing image  = ",image," with quality = ",quality)
-		im = self.openImage(image)
-		print(im.filename)
+		img = self.openImage(image)
+		im = np.array(img)
 		NAME = image.split('.')[0]
 		path = "compressed_images/compressed_"+ m + "_"+ NAME + str(quality) + ".jpg"
-		im.save(path,'jpeg',
-			quality = quality)
+		img.save(path,format="JPEG",quality = quality,subsampling = 2)
 		self.f_info.write(image + " : " + "compression_quality = " + str(quality) + " ,extract watermark with key = "+ str(key) + " and c = " + str(c) +  '\n')
 		#im = Image.open(path)
 		return path
@@ -186,14 +188,13 @@ class attackModel:
 		if(mode == "noise"):
 			mean = float(kernel[0])
 			std = float(kernel[1])
-			noise_img = random_noise(im, mode='gaussian',var = std)
-			noise_img = (255*noise_img).astype(np.uint8)
-			self.showImage(noise_img)
-			noise_img = Image.fromarray(noise_img)
+			noisy = skimage.util.random_noise(im, mode='gaussian', var=std)
+			noisy_img = Image.fromarray((noisy*255).astype(np.uint8))
+			self.showImage(noisy_img)
 			path = "filtered_images/filterd_noise_" + name + ".jpg"
-			noise_img.save(path,quality=100,subsampling=0)
-			self.f_info.write(image + " : " + "filter = " + mode + " ,with mean (μ) = " + str(mean) + " and standard diviation (σ) = " +  
-				str(std) + " key = " + str(key) + " c = " + str(c)+ '\n')
+			noisy_img.save(path,quality=100,subsampling=0)
+			#self.f_info.write(image + " : " + "filter = " + mode + " ,with mean (μ) = " + str(mean) + " and standard diviation (σ) = " +  
+				#str(std) + " key = " + str(key) + " c = " + str(c)+ '\n')
 		if(mode == 'HEQ'):
 			img = cv2.cvtColor(im, cv2.COLOR_BGR2YCrCb)
 			y, cr, cb = cv2.split(img)
