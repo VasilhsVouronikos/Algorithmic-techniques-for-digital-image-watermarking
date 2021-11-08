@@ -102,3 +102,9 @@ def decodeSip(sip):
                                              # we divide by 2 because by adding an extra 0 in the end of B we shift left the number
 	return key
 
+if __name__ == '__main__':
+	# inorder traversal to the sequence
+	l = [8,14,7,4,3,9,11,1,13,15,5,2,6,12,10]
+	l.reverse()
+	s = decodeSip(l)
+	print(s)

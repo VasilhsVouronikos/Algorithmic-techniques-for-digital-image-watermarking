@@ -1,7 +1,7 @@
 # THIS FUNCTION ENCODES AN INTEGER INTO 
 # A SELF INVERTING PERMUTATION
 
-C_list = []
+
 
 def bitonic(X,Y):
 	X.sort()               # sort X list in an ascending order
@@ -27,7 +27,11 @@ def flip(B_star):
 
 def encodeInteger(key):
 
-		
+		sip = []
+		P_b = []
+		B = []
+		C_list = []
+		B_inverse = []
 		# FORM BINARY REPRESANTATION O INPUT INTEGER
 		B = getBinary(key)						  			  # bin function returns the binaty representation as string so we form a list of characters
 		B = [int(i) for i in B]								  # this characters are just 0 and 1 so we reform the list to contain ints
@@ -74,6 +78,7 @@ def encodeInteger(key):
 
 		# FORM PERMUTATION FOLLOWING THE GIVEN ALGORITHM
 		sip = P_b
+		#P_b = sip
 		for i in range(len(C_list)):
 			t = C_list[i]
 			if(type(t) is tuple):                  # checking if we have tupple or not because when we put one single digit as tupple in python
@@ -83,5 +88,10 @@ def encodeInteger(key):
 			else:
 				a = t
 				sip[a - 1] = a
-
+		#del P_b[:]
 		return sip
+
+
+if __name__ == '__main__':
+	sip = encodeInteger(128)
+	print(sip)

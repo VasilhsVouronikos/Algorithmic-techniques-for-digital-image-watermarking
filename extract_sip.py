@@ -19,7 +19,7 @@ class ExtractPermutation:
 		img = Image.open(path)
 		return img
 
-	def getFFTTransform(self,image,t):
+	def getFFTTransform(self,image):
 		dft = np.fft.fft2(image,norm='ortho')
 		fftShift = np.fft.fftshift(dft)
 		mag = np.abs(fftShift)
@@ -38,10 +38,6 @@ class ExtractPermutation:
 		img_back = abs(img_back)
 		return img_back 
 
-	def findOptimalIntensity(self,image):
-		ret,th = cv2.threshold(image,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-		return ret	
-
 	def showImage(self,*image_args):
 		for image in image_args:
 			cv2.imshow('image',image)
@@ -49,20 +45,17 @@ class ExtractPermutation:
 		cv2.waitKey(0)
 		return
 
-	def getSip(self,img,SIZE):
+	def getSip(self,img,SIZE,PR,PB):
 		im = self.openImage(img)
 		r,g,b = im.split()
 
-		t1 = self.findOptimalIntensity(np.array(r))
-
-
-		sip1 = self.extractPermutationFromChannel(r,SIZE,t1)
-		sip2 = self.extractPermutationFromChannel(g,SIZE,t1)
-		sip3 = self.extractPermutationFromChannel(b,SIZE,t1)
+		sip1 = self.extractPermutationFromChannel(r,SIZE,PR,PB)
+		sip2 = self.extractPermutationFromChannel(g,SIZE,PR,PB)
+		sip3 = self.extractPermutationFromChannel(b,SIZE,PR,PB)
 
 		return sip1,sip2,sip3
 
-	def extractPermutationFromChannel(self,channel,SIZE,t):
+	def extractPermutationFromChannel(self,channel,SIZE,PR,PB):
 
 		grid_cell_num = 0
 		sip_cells = []
@@ -82,8 +75,8 @@ class ExtractPermutation:
 		# FOR EACH GRID CELL COMPUTE FFT MAGNITUDE AND PHASE:
 		# ALSO COMPUTE IMAGINARY RED AND BLUE ANULUS RADIOUSES:
 
-		RED_WIDTH = 2
-		BLUE_WIDTH = 2
+		RED_WIDTH = PR
+		BLUE_WIDTH = PB
 
 		RED_RADIOUS_X = math.floor((N / (2 * SIZE)))
 		RED_RADIOUS_Y = math.floor((M / (2 * SIZE)))
@@ -112,7 +105,7 @@ class ExtractPermutation:
 				
 				grid_cell = channel_array[r:r + grid_size_w,c:c + grid_size_h]
 
-				mag,phase = self.getFFTTransform(grid_cell,t)
+				mag,phase = self.getFFTTransform(grid_cell)
 				
 				#print(grid_cell.shape)
 			

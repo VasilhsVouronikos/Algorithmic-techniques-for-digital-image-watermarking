@@ -18,7 +18,8 @@ global secret_pg,secret_pb
     #,((3,5),(3,6)),((3,7),(4,0)),((4,1),(4,2)),((4,3),(4,4))]
 #pairsg = [((1, 4), (2, 3)), ((3, 2), (4, 1)), ((5, 0), (6, 0)), ((5, 1), (4, 2)), ((3, 3), (2, 4)), ((1, 5), (0, 6)), ((0, 7), (1, 6)), ((2, 5), (3, 4)), 
 #((4, 3), (5, 2)), ((6, 1), (7, 0)), ((7, 1), (6, 2))] # mid bands
-pairsg = [((4, 3),(5, 2)),((6, 1),(7, 0)),((7, 1), (6, 2)),((5, 0), (6, 0)), ((5, 1), (4, 2)),((3,3),(3,4)),((3, 2), (4, 1))]
+pairsg = [((1, 4), (2, 3)), ((3, 2), (4, 1)), ((5, 0), (6, 0)), ((5, 1), (4, 2)), ((3, 3), (2, 4)), ((1, 5), (0, 6)), ((0, 7), (1, 6)), ((2, 5), (3, 4)), 
+                                ((4, 3), (5, 2)), ((6, 1), (7, 0)), ((7, 1), (6, 2))]
 #,((4,1),(4,2)),((4,3),(4,4))]
 def binarizeLogo(path):
     l = np.array(openImage(path,'default'))
@@ -246,8 +247,8 @@ def embed(path,win_size,logo1,logo2,rep_code):
     blue = Image.fromarray(dis1)
     path = "watermarked_logo_" + path
     rgb = Image.merge('RGB', (red,green,blue))
-    rgb.save(path,optimize = True,quality= 100,subsampling=0)
-    #print(rgb.filename)
+    rgb.save(path,quality= 100,subsampling=0)
+    
     return path
     
 

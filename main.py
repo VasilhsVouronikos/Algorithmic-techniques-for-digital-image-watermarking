@@ -23,11 +23,11 @@ def startEncoding():
 def startEmbeding():
 	global SIP,SIZE
 	w = EmbedPermutation()
-	w.getWatermarkedImage(IMAGE,SIP,SIZE,IMAGE_NAME,COPT)
+	w.getWatermarkedImage(IMAGE,SIP,SIZE,IMAGE_NAME,COPT,2,2)
 
 def startExtracting():
 	ex = ExtractPermutation()
-	sip1,sip2,sip3 = ex.getSip(IMAGE,SIZE)
+	sip1,sip2,sip3 = ex.getSip(IMAGE,SIZE,2,2)
 	return sip1,sip2,sip3
 
 if __name__ == '__main__':

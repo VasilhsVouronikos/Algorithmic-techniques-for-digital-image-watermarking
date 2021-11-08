@@ -60,7 +60,7 @@ class EmbedPermutation:
 					f += 1
 		return cell_list
 
-	def getWatermarkedImage(self,im,sip,SIZE,name,copt):
+	def getWatermarkedImage(self,im,sip,SIZE,name,copt,PR,PB):
 		img = self.openImage(im)
 
 		w,h = img.size
@@ -71,28 +71,19 @@ class EmbedPermutation:
 		new_w = outim_w * SIZE
 		new_h = outim_h * SIZE
 
-		#new_img = img.resize((new_w,new_h))
-		#new_img.save(name + ".jpg")
-		#img1 = self.openImage(name + ".jpg")
-
 		r,g,b = img.split()
 
-		#th2 = self.findOptimalIntensity(np.array(g))
-		#th3 = self.findOptimalIntensity(np.array(b))
-
-		r_img = self.embedPermutationToChannel(r,sip,SIZE,copt)
-		g_img = self.embedPermutationToChannel(g,sip,SIZE,copt)
-		b_img = self.embedPermutationToChannel(b,sip,SIZE,copt)
+		r_img = self.embedPermutationToChannel(r,sip,SIZE,copt,PR,PB)
+		g_img = self.embedPermutationToChannel(g,sip,SIZE,copt,PR,PB)
+		b_img = self.embedPermutationToChannel(b,sip,SIZE,copt,PR,PB)
 
 		red = Image.fromarray(r_img)
 		green = Image.fromarray(g_img)
 		blue = Image.fromarray(b_img)
 
 		rgb = Image.merge('RGB', (red,green,blue))
-		# If image after embeding has different size here we resize it to original
-		#rgb = cv2.resize(rgb, None, interpolation = cv2.INTER_AREA)
-		#rgb.thumbnail(size)
-		rgb.save("watermarked_" + name + ".jpg",quality = 100,subsampling = 0)
+
+		rgb.save("watermarked_" + name + ".jpg",quality = 100)
 		return rgb
 
 	def mergeCellsToImage(self,m,unm,w,h,sip_cells):
@@ -119,7 +110,7 @@ class EmbedPermutation:
 			PHASE = mag_rest[i][1]
 			original_cell = self.getIFFTTransform(MAGNITUDE,PHASE)
 			unmodified_cells.append(original_cell)
-			#print("rest ",(mag_rest[i][5] - mag_rest[i][4]))
+			
 
 		for i in range(len(mag_marked)):
 
@@ -132,11 +123,6 @@ class EmbedPermutation:
 			COORD_R = mag_marked[i][6]
 			COORD_B = mag_marked[i][7]
 			a = np.amax(MAGNITUDE)
-			#print((AVG_B - AVG_R) + (D_array[i] + 4.0),mag_marked[i][8],mag_marked[i][9])
-			#print(AVG_R,AVG_B,D_array[i])
-			#plt.imshow(MAGNITUDE,cmap = 'gray')
-			#plt.show()
-			#print(COORD_R)
 			for j in range(gw):
 				for k in range(gh):
 					for t in range(len(COORD_R)):
@@ -144,22 +130,12 @@ class EmbedPermutation:
 							#print("mag ",MAGNITUDE[j,k])
 							val = (AVG_B - AVG_R) + (D_array[i] + copt)
 							MAGNITUDE[j,k] += val# change magnitude of red region cells
-					'''
-					for t in range(len(COORD_B)):
-						if(j == COORD_B[t][0] and k == COORD_B[t][1]):
-							#print(COORD_R[t][0],COORD_R[t][1])
-							val = (AVG_B - AVG_R) + (D_array[i] + 340)
-							MAGNITUDE[j,k] =  a#val# change magnitude of red region cells
-					'''
-			#print(COORD_R)
-			#print(MAGNITUDE)
-			#exit()
 			original_cell = self.getIFFTTransform(MAGNITUDE,PHASE)
 			modified_cells.append(original_cell)
-			#print("MOD ",(AVG_B - AVG_R))
+			
 		return modified_cells,unmodified_cells
 
-	def embedPermutationToChannel(self,channel,sip,SIZE,copt):
+	def embedPermutationToChannel(self,channel,sip,SIZE,copt,PR,PB):
 		grid_cell_num = 0
 		sip_cells = []
 
@@ -181,8 +157,6 @@ class EmbedPermutation:
 
 		N,M = channel.size
 		channel_array = np.array(channel)
-		#print(channel_array.shape)
-		#channel_array = cv2.resize(channel_array,(200,200))
 
 		# GET THE SIZE OF EACH GRID SHELL
 
@@ -192,8 +166,8 @@ class EmbedPermutation:
 		# FOR EACH GRID CELL COMPUTE FFT MAGNITUDE AND PHASE:
 		# ALSO COMPUTE IMAGINARY RED AND BLUE ANULUS RADIOUSES:
 
-		RED_WIDTH = 2
-		BLUE_WIDTH = 2
+		RED_WIDTH = PR
+		BLUE_WIDTH = PB
 
 		RED_RADIOUS_X = math.floor((N / (2 * SIZE)))
 		RED_RADIOUS_Y = math.floor((M / (2 * SIZE)))
