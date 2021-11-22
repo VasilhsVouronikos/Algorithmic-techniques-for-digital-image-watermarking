@@ -3,34 +3,8 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 
-
-def visualize_psnr(psnr_values1,psnr_values2,images,title):
-	fig, ax = plt.subplots()
-	plt.bar(range(len(psnr_values1)),height = psnr_values1,label = "key_method",bottom = psnr_values1,width = 0.5,align='center')
-	plt.bar(range(len(psnr_values2)),height = psnr_values2,label = "logo_method",width = 0.5, align='center')
-	plt.xticks(range(len(images)), images, size='small')
-	plt.title("SSIM in filter = " + title +  "\nNote: y-axis bar height is the addition of 2 psnr values")
-	plt.xlabel("image")
-	plt.ylabel("PSNR")
-	plt.legend()
-	
-	y_offset = -25
-	for bar in ax.patches:
-	  ax.text(
-      bar.get_x() + bar.get_width() / 2,
-      bar.get_height() + bar.get_y() + y_offset,
-      round(bar.get_height(),2),
-      ha='center',
-      color='w',
-      weight='bold',
-      size=8
-  	)
-
-	plt.show()
-	return
-
 def side_bar_chart(list1,list2,title,images,ylabel):
-	w = 0.4
+	w = 0.2
 	fig, ax = plt.subplots()
 	bar1 = np.arange(len(images))
 	bar2 = [i+w for i in bar1]
@@ -41,9 +15,13 @@ def side_bar_chart(list1,list2,title,images,ylabel):
 	plt.xlabel("Q")
 	plt.ylabel(ylabel)
 
-	plt.title(ylabel +" in jpeg " + title)
+	if(sys.argv[4] == 'C'):
+		A = "\n BER in B channel"
+		plt.title(ylabel +" in attack = " + title + A)
+	else:
+		plt.title(ylabel +" in attack = " + title)
 
-	y_offset = -0.09
+	y_offset = - float(sys.argv[3])
 	for bar in ax.patches:
 	  ax.text(
       bar.get_x() + bar.get_width() / 2,
@@ -59,14 +37,34 @@ def side_bar_chart(list1,list2,title,images,ylabel):
 	plt.show()
 
 
+def visualize_line(values1,values2,values3,im):
+	plt.plot(values1,values2,label = "Sip")
+	plt.plot(values1,values3,label = "Logo")
+	plt.xticks(range(len(values1)), images, size='small')
+	plt.xlabel("Crop attacks")
+	plt.ylabel("Quality")
+	plt.title("Comparison of crop outputs in image = " + im + "\n" + "considering quality of logos and Sip")
+	plt.legend()
+	plt.show()
+
+
 
 
 if __name__ == '__main__':
-	psnr_values1 = [0.97,0.96,0.95,0.94]
-	psnr_values2 = [0.92,0.91,0.90,0.89]
+	psnr_values1 = [1.0,1.0]
+	psnr_values2 = [0.81,0.88]
 	#psnr_values1 = [0.98,0.99,0.99,0.99,0.99]
 	#psnr_values2 = [0.98,0.99,0.99,0.99,0.99]
-	images = ["Q=80","Q=70","Q=60","Q=50"]
+	images = ["w_sky","w_winter"]
 	#visualize_psnr(psnr_values1,psnr_values2,images,sys.argv[1])
+	
 	side_bar_chart(psnr_values1,psnr_values2,sys.argv[1],images,sys.argv[2])
+	'''
+	im = "temple.jpg"
+	attacks = ["128_cols","128_rows","256x256_white","256x256_black","350x350_white","350x350_black"]
+	logo = ["acceptable","acceptable","acceptable","acceptable","bad","bad"]
+	sip = ["acceptable","acceptable","very good","very good","very good","very good"]
+
+	'''
+	#visualize_line(attacks,sip,logo,im)
 	#visualize_psnr(psnr_values2,images)

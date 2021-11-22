@@ -24,7 +24,7 @@ class attackModel:
 			kernel = args[1]
 			path = self.filter(image,ftype,kernel,key,c,m)
 		if(attack_type == 'jpeg'):
-			quality = args[0]
+			quality = int(args[0])
 			path = self.JPEGcompression(image,quality,key,c,m)
 		if(attack_type == 'scale'):
 			per = args[0] / 100
@@ -44,6 +44,7 @@ class attackModel:
 		plt.imshow(im)
 		plt.show()
 		return
+
 
 	def rotate(self,image,angle,m):
 		img = self.openImage(image)
@@ -145,11 +146,13 @@ class attackModel:
 		name = image.split('.')[0]
 		path = ""
 		print('Applying ',mode,' filter with kernel = ',kernel,' on image = ',image)
-		if(mode == 'gaussian'):
-			imblur = cv2.GaussianBlur(im,kernel,0.5,0.5)
+		if(mode == 'gaussian_blur'):
+			
+			kernelbase = (int(kernel[0]),int(kernel[1]))
+			imblur = cv2.GaussianBlur(im,kernelbase,0.5,0.5)
 			self.showImage(imblur)
 			imblur = Image.fromarray(imblur)
-			path = "filtered_images/filterd_gaussian_" + name + ".jpg"
+			path = "filtered_images/blur/filterd_gaussian_" + name + ".jpg"
 			imblur.save(path,quality=100,subsampling=0)
 			self.f_info.write(image + " : " + "filter = " + mode + " with kernel = " + str(kernel) + '\n')
 		if(mode == 'median'):
@@ -168,12 +171,12 @@ class attackModel:
 			self.f_info.write(image + " : " + "filter = " + mode + " with kernel = " + str(kernel) + '\n')
 		if(mode == 'gamma'):
 			gamma = kernel
-			invGamma = 1.0 / gamma
+			invGamma = 1.0 / float(gamma[0])
 			table = np.array([((i / 255.0) ** invGamma) * 255 for i in np.arange(0, 256)]).astype("uint8")
 			img = cv2.LUT(im, table)
 			img = Image.fromarray(img)
 			self.showImage(img)
-			path = "filtered_images/filterd_gamma_" + name + ".jpg"
+			path = "filtered_images/gamma/filterd_gamma_"+ str(gamma) + "_" + name + ".jpg"
 			img.save(path,quality=100,subsampling=0)
 		if(mode == 'sharpening'):
 			kernel = np.array([[0, -1, 0], 
@@ -182,16 +185,16 @@ class attackModel:
 			image_sharp = cv2.filter2D(im, -1, kernel)
 			self.showImage(image_sharp)
 			image_sharp = Image.fromarray(image_sharp)
-			path = "filtered_images/filterd_sharpened_" + name + ".jpg"
+			path = "filtered_images/sharpen/filterd_sharpened_"+ name + ".jpg"
 			image_sharp.save(path,quality=100,subsampling=0)
 			self.f_info.write(image + " : " + "filter = " + mode + " with kernel = " + str(kernel) + '\n')
-		if(mode == "noise"):
+		if(mode == "gaussian_noise"):
 			mean = float(kernel[0])
 			std = float(kernel[1])
 			noisy = skimage.util.random_noise(im, mode='gaussian', var=std)
 			noisy_img = Image.fromarray((noisy*255).astype(np.uint8))
 			self.showImage(noisy_img)
-			path = "filtered_images/filterd_noise_" + name + ".jpg"
+			path = "filtered_images/noise/filterd_noise_" + str(std) + "_" + name + ".jpg"
 			noisy_img.save(path,quality=100,subsampling=0)
 			#self.f_info.write(image + " : " + "filter = " + mode + " ,with mean (μ) = " + str(mean) + " and standard diviation (σ) = " +  
 				#str(std) + " key = " + str(key) + " c = " + str(c)+ '\n')
@@ -203,7 +206,7 @@ class attackModel:
 			img_rgb = cv2.cvtColor(img_y_cr_cb_eq, cv2.COLOR_YCR_CB2BGR)
 			self.showImage(img_rgb)
 			img_rgb = Image.fromarray(img_rgb)
-			path = "filtered_images/filterd_HEQ_" + name + ".jpg"
+			path = "filtered_images/heq/filterd_HEQ_" + name + ".jpg"
 			img_rgb.save(path,quality=100,subsampling=0)
 		return path
 
