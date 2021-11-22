@@ -71,7 +71,7 @@ def splitImagechannels(im):
     return g,b,r
 
 def embed(path,win_size,logo1,logo2,rep_code):
-    print(path.format)
+    
     secret_pairs_g = []
     secret_pairs_b = []
     arr = np.zeros([8,8])

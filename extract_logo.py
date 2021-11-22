@@ -128,3 +128,5 @@ def extractLogoFromImage(path,win_size,secret_pairs,rep_code):
     plt.imshow(original2,cmap = 'gray')
     plt.title("logo2")
     plt.show()
+
+    return original1,original2

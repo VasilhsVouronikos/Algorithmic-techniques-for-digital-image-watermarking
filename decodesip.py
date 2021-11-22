@@ -104,7 +104,6 @@ def decodeSip(sip):
 
 if __name__ == '__main__':
 	# inorder traversal to the sequence
-	l = [8,14,7,4,3,9,11,1,13,15,5,2,6,12,10]
-	l.reverse()
+	l = [8,4,12,2,6,10,13,1,3,5,7,9,11]
 	s = decodeSip(l)
 	print(s)

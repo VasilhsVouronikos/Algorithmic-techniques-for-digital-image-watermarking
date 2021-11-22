@@ -82,7 +82,8 @@ class EmbedPermutation:
 		blue = Image.fromarray(b_img)
 
 		rgb = Image.merge('RGB', (red,green,blue))
-
+		rgb = cv2.resize(np.array(rgb),(w,h),interpolation = cv2.INTER_AREA)
+		rgb = Image.fromarray(rgb)
 		rgb.save("watermarked_" + name + ".jpg",quality = 100)
 		return rgb
 

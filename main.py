@@ -2,6 +2,7 @@ from encodeinteger import encodeInteger
 from decodesip import decodeSip
 from embed_key import EmbedPermutation
 from extract_sip import ExtractPermutation
+from recossip_code import recsip
 import sys
 import re
 
@@ -45,6 +46,20 @@ if __name__ == '__main__':
 		print("Starting extraction of permutation")
 		s1,s2,s3 = startExtracting()
 		print(s1,s2,s3)
+
+		newsip1 = recsip(s1,SIP,KEY)
+		newsip2 = recsip(s2,SIP,KEY)
+		newsip3 = recsip(s3,SIP,KEY)
+
+		if(newsip1 == SIP):
+			print("fixed sip: ",newsip1)
+		elif(newsip2 == SIP):
+			print("fixed sip: ",newsip2)
+		elif(newsip3 == SIP):
+			print("fixed sip: ",newsip3)
+		else:
+			print("Sip is not found yet!")
+
 		key1 = decodeSip(s1)
 		key2 = decodeSip(s2)
 		key3 = decodeSip(s3)
