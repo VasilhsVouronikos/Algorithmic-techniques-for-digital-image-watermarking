@@ -114,7 +114,7 @@ class EmbedPermutation:
 			
 
 		for i in range(len(mag_marked)):
-
+			marked_cells = 0
 			MAGNITUDE = mag_marked[i][0]
 			PHASE = mag_marked[i][1]
 			RED_AN = mag_marked[i][2]
@@ -131,10 +131,11 @@ class EmbedPermutation:
 							#print("mag ",MAGNITUDE[j,k])
 							val = (AVG_B - AVG_R) + (D_array[i] + copt)
 							MAGNITUDE[j,k] += val# change magnitude of red region cells
+							marked_cells += 1
 			original_cell = self.getIFFTTransform(MAGNITUDE,PHASE)
 			modified_cells.append(original_cell)
 			
-		return modified_cells,unmodified_cells
+		return modified_cells,unmodified_cells,marked_cells
 
 	def embedPermutationToChannel(self,channel,sip,SIZE,copt,PR,PB):
 		grid_cell_num = 0
@@ -163,6 +164,7 @@ class EmbedPermutation:
 
 		grid_size_w = math.floor((N / SIZE))
 		grid_size_h = math.floor((M / SIZE))
+		print(grid_size_w,grid_size_h)
 
 		# FOR EACH GRID CELL COMPUTE FFT MAGNITUDE AND PHASE:
 		# ALSO COMPUTE IMAGINARY RED AND BLUE ANULUS RADIOUSES:
@@ -231,8 +233,9 @@ class EmbedPermutation:
 			x += 1
 			y = 0
 		
-		m,unm = self.modifyMagnitude(mag_red_blue,mag_rest,MaxDRows,sip_cells,grid_size_w,grid_size_h,copt)
+		m,unm,m_cells = self.modifyMagnitude(mag_red_blue,mag_rest,MaxDRows,sip_cells,grid_size_w,grid_size_h,copt)
 		img = self.mergeCellsToImage(m,unm,grid_size_w,grid_size_h,sip_cells)
+		print("percentage of modified cells per channel: ",m_cells/(grid_size_w * grid_size_h))
 
 		return img
 

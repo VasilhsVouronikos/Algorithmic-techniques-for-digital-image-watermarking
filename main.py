@@ -2,7 +2,7 @@ from encodeinteger import encodeInteger
 from decodesip import decodeSip
 from embed_key import EmbedPermutation
 from extract_sip import ExtractPermutation
-from recossip_code import recsip
+from recossip import recsip
 import sys
 import re
 

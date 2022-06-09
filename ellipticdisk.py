@@ -17,6 +17,7 @@ def createEllipticDisk(array,R1_X,R1_Y,W,C_X,C_Y,cell_w,cell_h):
 			if((((x - C_X)**2) / (R1_X **2) + ((((y - C_Y)**2)) / (R1_Y **2)))<= 1):
 				COORD1.append((x,y))
 				RES1.append(array[x][y])
+				
 	for x in range(cell_w):
 		for y in range(cell_h):
 			if((((x - C_X)**2) / (R2_X **2) + ((((y - C_Y)**2)) / (R2_Y **2))) <= 1):
